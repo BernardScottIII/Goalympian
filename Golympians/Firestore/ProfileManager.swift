@@ -13,6 +13,7 @@ struct Profile: Codable, Hashable {
     var nickname: String?
     var followers: [String]
     var following: [String]
+    var publicWorkoutIds: [String]
     var photoURL: String?
     var photoPath: String?
     
@@ -22,6 +23,7 @@ struct Profile: Codable, Hashable {
         try container.encodeIfPresent(self.nickname, forKey: .nickname)
         try container.encode(self.followers, forKey: .followers)
         try container.encode(self.following, forKey: .following)
+        try container.encode(self.publicWorkoutIds, forKey: .publicWorkoutIds)
         try container.encode(self.photoURL, forKey: .photoURL)
         try container.encode(self.photoPath, forKey: .photoPath)
     }
@@ -31,6 +33,7 @@ struct Profile: Codable, Hashable {
         case nickname = "nickname"
         case followers = "followers"
         case following = "following"
+        case publicWorkoutIds = "public_workout_ids"
         case photoURL = "photo_url"
         case photoPath = "photo_path"
     }
@@ -41,6 +44,7 @@ struct Profile: Codable, Hashable {
         self.nickname = try container.decodeIfPresent(String.self, forKey: .nickname)
         self.followers = try container.decode([String].self, forKey: .followers)
         self.following = try container.decode([String].self, forKey: .following)
+        self.publicWorkoutIds = try container.decode([String].self, forKey: .publicWorkoutIds)
         self.photoURL = try container.decodeIfPresent(String.self, forKey: .photoURL)
         self.photoPath = try container.decodeIfPresent(String.self, forKey: .photoPath)
     }
@@ -50,6 +54,7 @@ struct Profile: Codable, Hashable {
         nickname: String?,
         followers: [String],
         following: [String],
+        publicWorkoutIds: [String],
         photoURL: String?,
         photoPath: String?
     ) {
@@ -57,6 +62,7 @@ struct Profile: Codable, Hashable {
         self.nickname = nickname
         self.followers = followers
         self.following = following
+        self.publicWorkoutIds = publicWorkoutIds
         self.photoURL = photoURL
         self.photoPath = photoPath
     }
@@ -154,6 +160,7 @@ final class ProfileManager {
             nickname: oldProfile.nickname,
             followers: oldProfile.followers,
             following: oldProfile.following,
+            publicWorkoutIds: oldProfile.publicWorkoutIds,
             photoURL: oldProfile.photoURL,
             photoPath: oldProfile.photoPath
         )

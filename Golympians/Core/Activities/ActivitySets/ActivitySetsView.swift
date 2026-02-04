@@ -9,7 +9,7 @@ import SwiftUI
 import FirebaseFirestore
 
 struct ActivitySetsView: View {
-
+    
     @ObservedObject var viewModel: ActivityViewModel
     let workoutId: String
     @Binding var activity: DBActivity
@@ -25,14 +25,16 @@ struct ActivitySetsView: View {
     }
     
     var body: some View {
-        ForEach(activity.activitySets) { set in
+        let activityId = activity.id
+        
+        ForEach(activity.activitySets, id: \.id) { set in
             ActivitySetView(
                 set: set,
                 onCommit: {
-                    viewModel.updateActivitySet(workoutId: workoutId, activity: activity, updatedSet: $0)
+                    viewModel.updateActivitySet(workoutId: workoutId, activityId: activityId, updatedSet: $0)
                 },
                 onDelete: {
-                    viewModel.deleteActivitySet(workoutId: workoutId, activity: activity, set: $0)
+                    viewModel.removeActivitySet(workoutId: workoutId, activity: activity, set: $0)
                 }
             )
         }

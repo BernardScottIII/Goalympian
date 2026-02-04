@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct UpdateUsernameView: View {
     @Environment(\.dismiss) private var dismiss
@@ -88,7 +89,8 @@ struct UpdateUsernameView: View {
                 if !showEmptyUsernameAlert {
                     Task {
                         savingProfile = true
-                        try await viewModel.changeUsername(newUsername: newUsername)
+                        try await viewModel.changeUsername(to: newUsername)
+                        try await viewModel.changeAllWorkoutsUsername(to: newUsername)
                         try await viewModel.loadMyProfile()
                         savingProfile = false
                         dismiss()
@@ -112,7 +114,8 @@ struct UpdateUsernameView: View {
 }
 
 #Preview {
-    @Previewable @StateObject var viewModel = ProfileViewModel()
+//    @Previewable let workoutDataService = 
+    @Previewable @StateObject var viewModel = ProfileViewModel(workoutDataService: ProdWorkoutManager(workoutCollection: Firestore.firestore().collection("workouts")))
     NavigationStack {
         UpdateUsernameView(viewModel: viewModel)
     }

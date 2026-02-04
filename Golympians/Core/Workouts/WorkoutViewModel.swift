@@ -41,9 +41,11 @@ final class WorkoutViewModel: ObservableObject {
     }
     
     func createWorkout(name: String, description: String, date: Date) async throws -> DBWorkout {
-        let newWorkout = try DBWorkout(
+        let authUser = try AuthenticationManager.shared.getAuthenticatedUser()
+        let username = try await UserManager.shared.getUser(userId: authUser.uid).username
+        let newWorkout = DBWorkout(
             id: UUID().uuidString,
-            userId: AuthenticationManager.shared.getAuthenticatedUser().uid,
+            username: username,
             name: name,
             description: description,
             date: date

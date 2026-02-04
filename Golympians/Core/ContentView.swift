@@ -14,6 +14,7 @@ struct ContentView: View {
     
     @State private var showSignInView: Bool = false
     @AppStorage("profileIncomplete") var profileIncomplete: Bool = true
+    @AppStorage("showUpdateView") var showUpdateView: Bool = true
     private var workoutDataService = ProdWorkoutManager(workoutCollection: Firestore.firestore().collection("workouts"))
     
     @StateObject private var viewModel = ContentViewModel()
@@ -37,6 +38,9 @@ struct ContentView: View {
         }
         .fullScreenCover(isPresented: $profileIncomplete) {
             CompleteProfileView(profileIncomplete: $profileIncomplete)
+        }
+        .fullScreenCover(isPresented: $showUpdateView) {
+            UpdateView(showUpdateView: $showUpdateView)
         }
     }
 }

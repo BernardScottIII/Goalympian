@@ -65,7 +65,7 @@ struct ExerciseDetailsView: View {
         secondaryMuscles: ["Forehead", "Fingers", "eyes"],
         instructions: ["Sit down at keyboard", "start typing", "nothing works", "cry"],
         gifUrl: "google.com",
-        uuid: "SampleUserID",
+        username: "SampleUsername",
         setType: .resistance
     )
     NavigationStack {

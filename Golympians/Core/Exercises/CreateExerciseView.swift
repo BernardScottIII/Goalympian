@@ -148,19 +148,18 @@ struct CreateExerciseView: View {
         
         if !duplicateExerciseAlert && !missingNameAlert {
             Task {
-                let savedEquipment = equipment != EquipmentOption.customEquipment ? equipment.rawValue : customEquipment
-                
-                try await ExerciseManager.shared.uploadExercise(exercise: APIExercise(
+                try await viewModel.uploadExercise(
                     id: UUID().uuidString,
                     name: name,
-                    equipment: savedEquipment,
+                    equipment: equipment,
+                    customEquipment: customEquipment,
                     target: targetMuscle,
                     secondaryMuscles: ["No secondary muscles"],
                     instructions: instructions,
                     gifUrl: "no url",
-                    uuid: AuthenticationManager.shared.getAuthenticatedUser().uid,
                     setType: setType
-                ))
+                )
+                try await viewModel.getExercises()
             }
             dismiss()
         }

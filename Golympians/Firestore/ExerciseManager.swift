@@ -21,7 +21,7 @@ struct APIExercise: Identifiable, Codable, Hashable {
     var secondaryMuscles: [String]
     var instructions: [String]
     let gifUrl: String
-    let uuid: String
+    let username: String
     let setType: SetType
     
     enum CodingKeys: String, CodingKey {
@@ -32,7 +32,7 @@ struct APIExercise: Identifiable, Codable, Hashable {
         case secondaryMuscles
         case instructions
         case gifUrl
-        case uuid
+        case username
         case setType
     }
 }
@@ -59,12 +59,12 @@ final class ExerciseManager {
         try await exerciseDocument(exerciseId: exerciseId).getDocument(as: APIExercise.self)
     }
     
-    func removeUserExercise(userId: String, exercise: APIExercise) async throws {
+    func removeUserExercise(username: String, exercise: APIExercise) async throws {
         guard let exerciseId = exercise.id else {
             return
         }
         
-        if exercise.uuid == userId {
+        if exercise.username == username {
             try await exerciseDocument(exerciseId: exerciseId).delete()
         }
     }
@@ -75,7 +75,7 @@ final class ExerciseManager {
         nameDescending descending: Bool?,
         forMuscle muscle: String?,
         usingEquipment equipment: String?,
-        uuids: [String]?
+        usernames: [String]?
     ) async throws -> [APIExercise] {
         var result: Query = exercisesCollection
         
@@ -95,8 +95,8 @@ final class ExerciseManager {
             }
         }
         
-        if let uuids = uuids {
-            result = result.whereField(APIExercise.CodingKeys.uuid.rawValue, in: uuids)
+        if let usernames = usernames {
+            result = result.whereField(APIExercise.CodingKeys.username.rawValue, in: usernames)
         }
         
         return try await result.getDocuments(as: APIExercise.self)

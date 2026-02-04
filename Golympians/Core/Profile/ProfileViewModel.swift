@@ -13,6 +13,14 @@ final class ProfileViewModel: ObservableObject {
     @Published var myProfile: Profile? = nil
     @Published private(set) var isFollowing: Bool? = nil
     
+    let workoutDataService: WorkoutManagerProtocol
+    
+    init(
+        workoutDataService: WorkoutManagerProtocol
+    ) {
+        self.workoutDataService = workoutDataService
+    }
+    
     func loadMyProfile() async throws {
         let userId = try AuthenticationManager.shared.getAuthenticatedUser().uid
         let username = try await UserManager.shared.getUser(userId: userId).username
@@ -66,9 +74,15 @@ final class ProfileViewModel: ObservableObject {
         }
     }
     
-    func changeUsername(newUsername: String) async throws {
+    func changeUsername(to newUsername: String) async throws {
         if let username = myProfile?.username {
             try await ProfileManager.shared.changeUsername(from: username, to: newUsername)
+        }
+    }
+    
+    func changeAllWorkoutsUsername(to newUsername: String) async throws {
+        if let username = myProfile?.username {
+            try await workoutDataService.changeUsername(from: username, to: newUsername)
         }
     }
 }

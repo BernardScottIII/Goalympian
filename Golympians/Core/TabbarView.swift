@@ -52,7 +52,7 @@ struct TabbarView: View {
             
             Tab("Explore", systemImage: "magnifyingglass", value: .explore) {
                 NavigationStack(path: $exploreNavigationPath) {
-                    ExploreView()
+                    ExploreView(workoutDataService: workoutDataService)
                 }
             }
             

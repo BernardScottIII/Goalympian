@@ -6,22 +6,25 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct ProfileView: View {
     
-    @StateObject private var viewModel = ProfileViewModel()
+    @StateObject private var viewModel: ProfileViewModel
     
     @State private var followerCount: Int
     @State private var followingCount: Int
     
-//    private let shareURL = URL(string:"https://github.com/BernardScottIII/Golympians")!
-    
     let profile: Profile
+    let workoutDataService: WorkoutManagerProtocol
     
     init(
-        profile: Profile
+        profile: Profile,
+        workoutDataService: WorkoutManagerProtocol
     ) {
         self.profile = profile
+        self.workoutDataService = workoutDataService
+        self._viewModel = StateObject(wrappedValue: ProfileViewModel(workoutDataService: workoutDataService))
         followerCount = profile.followers.count
         followingCount = profile.following.count
     }
@@ -29,7 +32,7 @@ struct ProfileView: View {
     var body: some View {
         VStack {
             
-            ProfileHeaderView(followerCount: $followerCount, followingCount: $followingCount, profile: profile)
+            ProfileHeaderView(followerCount: $followerCount, followingCount: $followingCount, profile: profile, workoutDataService: workoutDataService)
             
             HStack {
                 Spacer()
@@ -90,7 +93,8 @@ struct ProfileView: View {
 }
 
 #Preview {
+    @Previewable let workoutDataService = ProdWorkoutManager(workoutCollection: Firestore.firestore().collection("workouts"))
     NavigationStack {
-        ProfileView(profile: Profile(username: "TheUser", nickname: "Buddy", followers: ["Nard"], following: ["5", "asd"], photoURL: "", photoPath: ""))
+        ProfileView(profile: Profile(username: "TheUser", nickname: "Buddy", followers: ["Nard"], following: ["5", "asd"], publicWorkoutIds: ["1234", "5678"], photoURL: "", photoPath: ""), workoutDataService: workoutDataService)
     }
 }

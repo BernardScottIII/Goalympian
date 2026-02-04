@@ -15,42 +15,13 @@ final class ExercisesViewModel: ObservableObject {
     @Published var selectedFilter: FilterOption? = .noFilter
     @Published var selectedMuscle: MuscleOption? = .allMuscles
     @Published var selectedEquipment: EquipmentOption? = .noEquipment
-    @Published var userIds: [String]? = nil
+    @Published var usernames: [String]? = nil
     
     let dataService: WorkoutManagerProtocol
     
     init(dataService: WorkoutManagerProtocol) {
         self.dataService = dataService
     }
-    
-//    func downloadProductsAndUploadToFirebase() {        
-////        guard let url = URL(string: "https://exercisedb.p.rapidapi.com/exercises?limit=0") else { return }
-//        guard let url = URL(string: "https://exercisedb.p.rapidapi.com/exercises/targetList") else { return }
-//        
-//        Task {
-//            do {
-//                var request = URLRequest(url: url)
-//                request.addValue("c531d8c736mshbe3347fea1e86c5p1aac93jsneed777f556e9", forHTTPHeaderField: "x-rapidapi-key")
-//                let (data, _) = try await URLSession.shared.data(for: request)
-////                let exercises = try JSONDecoder().decode([APIExercise].self, from: data)
-////                print(exercises)
-////                
-////                for exercise in exercises {
-////                    try? await ExerciseManager.shared.uploadAPIExercise(apiExercise: exercise)
-////                }
-//                let bodyParts = try JSONDecoder().decode([String].self, from: data)
-//                print(bodyParts)
-//                
-////                for part in bodyParts {
-////                    
-////                }
-//                
-//                print("SUCCESS")
-//            } catch {
-//                print(error)
-//            }
-//        }
-//    }
     
     func addWorkoutActivity(workoutId: String, exercise: APIExercise) {
         Task {
@@ -73,17 +44,20 @@ final class ExercisesViewModel: ObservableObject {
         try await self.getExercises()
     }
     
-    func userIdsSelected(userIds: [String]) async throws {
-        self.userIds = userIds
+    func selectUsernames(usernames: [String]) async throws {
+        self.usernames = usernames
         try await self.getExercises()
     }
     
     func getExercises() async throws {
-        self.exercises = try await ExerciseManager.shared.getAllExercises(nameDescending: selectedFilter?.nameDescending, forMuscle: selectedMuscle?.rawValue, usingEquipment: selectedEquipment?.rawValue, uuids: userIds)
+        self.exercises = try await ExerciseManager.shared.getAllExercises(nameDescending: selectedFilter?.nameDescending, forMuscle: selectedMuscle?.rawValue, usingEquipment: selectedEquipment?.rawValue, usernames: usernames)
     }
     
     func removeUserExercise(exercise: APIExercise) async throws {
-        try await ExerciseManager.shared.removeUserExercise(userId: AuthenticationManager.shared.getAuthenticatedUser().uid, exercise: exercise)
+        let userId = try AuthenticationManager.shared.getAuthenticatedUser().uid
+        let username = try await UserManager.shared.getUser(userId: userId).username
+        
+        try await ExerciseManager.shared.removeUserExercise(username: username, exercise: exercise)
     }
     
     func binding(for exercise: APIExercise) -> Binding<APIExercise>? {
@@ -100,4 +74,39 @@ final class ExercisesViewModel: ObservableObject {
     func updateExercise(exercise: APIExercise) async throws {
         try await ExerciseManager.shared.updateExercise(exercise: exercise)
     }
+    
+    func uploadExercise(
+        id: String,
+        name: String,
+        equipment: EquipmentOption,
+        customEquipment: String?,
+        target: MuscleOption,
+        secondaryMuscles: [String],
+        instructions: [String],
+        gifUrl: String,
+        setType: SetType
+    ) async throws {
+        let userId = try AuthenticationManager.shared.getAuthenticatedUser().uid
+        let username = try await UserManager.shared.getUser(userId: userId).username
+
+        let savedEquipment: String
+        if equipment == .customEquipment {
+            savedEquipment = customEquipment ?? "custom"
+        } else {
+            savedEquipment = equipment.rawValue
+        }
+
+        try await ExerciseManager.shared.uploadExercise(exercise: APIExercise(
+            id: UUID().uuidString,
+            name: name,
+            equipment: savedEquipment,
+            target: target,
+            secondaryMuscles: ["No secondary muscles"],
+            instructions: instructions,
+            gifUrl: "no url",
+            username: username,
+            setType: setType
+        ))
+    }
 }
+

@@ -6,11 +6,13 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct ProfileHeaderView: View {
     @Binding var followerCount: Int
     @Binding var followingCount: Int
     let profile: Profile
+    let workoutDataService: WorkoutManagerProtocol
     
     var body: some View {
         HStack {
@@ -60,15 +62,16 @@ struct ProfileHeaderView: View {
             Spacer()
         }
         .navigationDestination(for: [String].self) { resultList in
-            ProfileListView(usernames: resultList)
+            ProfileListView(usernames: resultList, workoutDataService: workoutDataService)
         }
     }
 }
 
 #Preview {
+    @Previewable let workoutDataService = ProdWorkoutManager(workoutCollection: Firestore.firestore().collection("workouts"))
     @Previewable @State var followerCount: Int = 1
     @Previewable @State var followingCount: Int = 2
     NavigationStack {
-        ProfileHeaderView(followerCount: $followerCount, followingCount: $followingCount, profile: Profile(username: "MyUsername", nickname: "My Nickname", followers: ["Nard"], following: ["Nard", "MyMan"], photoURL: nil, photoPath: nil))
+        ProfileHeaderView(followerCount: $followerCount, followingCount: $followingCount, profile: Profile(username: "MyUsername", nickname: "My Nickname", followers: ["Nard"], following: ["Nard", "MyMan"], publicWorkoutIds: ["1234", "5678"], photoURL: nil, photoPath: nil), workoutDataService: workoutDataService)
     }
 }

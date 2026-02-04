@@ -36,5 +36,5 @@ struct ProfileSearchResultView: View {
 }
 
 #Preview {
-    ProfileSearchResultView(profile: Profile(username: "Testing", nickname: nil, followers: [], following: [], photoURL: nil, photoPath: nil))
+    ProfileSearchResultView(profile: Profile(username: "Testing", nickname: nil, followers: [], following: [], publicWorkoutIds: [], photoURL: nil, photoPath: nil))
 }

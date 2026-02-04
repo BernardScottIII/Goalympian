@@ -6,12 +6,21 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct ExploreView: View {
     @EnvironmentObject private var deepLinkManager: DeepLinkManager
     
     @StateObject private var viewModel = ExploreViewModel()
     @State private var searchText: String = ""
+    
+    let workoutDataService: WorkoutManagerProtocol
+    
+    init(
+        workoutDataService: WorkoutManagerProtocol
+    ) {
+        self.workoutDataService = workoutDataService
+    }
     
     var body: some View {
         List {
@@ -29,14 +38,14 @@ struct ExploreView: View {
         }
         .searchable(text: $searchText)
         .navigationDestination(for: Profile.self, destination: { profile in
-            ProfileView(profile: profile)
+            ProfileView(profile: profile, workoutDataService: workoutDataService)
         })
         .navigationDestination(isPresented: Binding<Bool>(
             get: { deepLinkManager.navigatedToProfile != nil },
             set: { _ in deepLinkManager.navigatedToProfile = nil }
         )) {
             if let profile = deepLinkManager.navigatedToProfile {
-                ProfileView(profile: profile)
+                ProfileView(profile: profile, workoutDataService: workoutDataService)
             }
         }
         .onAppear {
@@ -48,7 +57,8 @@ struct ExploreView: View {
 }
 
 #Preview {
+    @Previewable let workoutDataService = ProdWorkoutManager(workoutCollection: Firestore.firestore().collection("workouts"))
     NavigationStack {
-        ExploreView()
+        ExploreView(workoutDataService: workoutDataService)
     }
 }

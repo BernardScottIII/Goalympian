@@ -72,16 +72,17 @@ final class SettingsViewModel: ObservableObject {
 extension SettingsViewModel {
     func deleteAccount() async throws {
         let userId = try AuthenticationManager.shared.getAuthenticatedUser().uid
+        let username = try await UserManager.shared.getUser(userId: userId).username
         
         // MARK: Exercise Removal
         let exercises = try await ExerciseManager.shared.getAllExercises(
             nameDescending: nil,
             forMuscle: nil,
             usingEquipment: nil,
-            uuids: [userId]
+            usernames: [username]
         )
         for exercise in exercises {
-            try await ExerciseManager.shared.removeUserExercise(userId: userId, exercise: exercise)
+            try await ExerciseManager.shared.removeUserExercise(username: username, exercise: exercise)
         }
         
         // MARK: Workout Removal

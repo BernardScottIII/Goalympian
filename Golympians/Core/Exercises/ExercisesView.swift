@@ -21,13 +21,13 @@ struct ExercisesView: View {
     @Binding var scrollTargetActivity: Int?
     let workoutDataService: WorkoutManagerProtocol
     let workoutId: String
-    let userIds: [String]
+    let usernames: [String]
     
     init(
         activityViewModel: ActivityViewModel,
         workoutDataService: WorkoutManagerProtocol,
         workoutId: String,
-        userIds: [String],
+        usernames: [String],
         navigationTitle: String = "Exercises",
         scrollTargetActivity: Binding<Int?> = .constant(nil)
     ) {
@@ -35,7 +35,7 @@ struct ExercisesView: View {
         self.activityViewModel = activityViewModel
         self.workoutDataService = workoutDataService
         self.workoutId = workoutId
-        self.userIds = userIds
+        self.usernames = usernames
         self.navigationTitle = navigationTitle
         self._scrollTargetActivity = scrollTargetActivity
     }
@@ -83,7 +83,7 @@ struct ExercisesView: View {
         .navigationTitle(navigationTitle)
         .searchable(text: $searchText)
         .task {
-            try? await viewModel.userIdsSelected(userIds: userIds)
+            try? await viewModel.selectUsernames(usernames: usernames)
         }
         .withExercisesToolbar(viewModel: viewModel)
         
@@ -101,7 +101,7 @@ struct ExercisesView: View {
 #Preview {
     @Previewable let workoutDataService = ProdWorkoutManager(workoutCollection: Firestore.firestore().collection("workouts"))
     NavigationStack {
-        ExercisesView(activityViewModel: ActivityViewModel(dataService: workoutDataService), workoutDataService: workoutDataService, workoutId: "SampleId", userIds: [
+        ExercisesView(activityViewModel: ActivityViewModel(dataService: workoutDataService), workoutDataService: workoutDataService, workoutId: "SampleId", usernames: [
             UUID().uuidString,
             "global"
         ])

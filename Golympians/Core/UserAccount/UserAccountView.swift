@@ -11,10 +11,9 @@ import FirebaseFirestore
 
 struct UserAccountView: View {
     @StateObject private var viewModel = UserAccountViewModel()
-    @StateObject private var profileViewModel = ProfileViewModel()
-    @State private var userId: String = ""
-//    @State private var selectedPhoto: PhotosPickerItem? = nil
-    @State var profile: Profile? = nil
+    @StateObject private var profileViewModel: ProfileViewModel
+    //    @State private var userId: String = ""
+    //    @State var profile: Profile? = nil
     @State private var followerCount: Int = 0
     @State private var followingCount: Int = 0
     
@@ -22,49 +21,63 @@ struct UserAccountView: View {
     @Binding var profileIncomplete: Bool
     let workoutDataService: WorkoutManagerProtocol
     
+    init(
+        showSignInView: Binding<Bool>,
+        profileIncomplete: Binding<Bool>,
+        workoutDataService: WorkoutManagerProtocol
+    ) {
+        self.workoutDataService = workoutDataService
+        self._showSignInView = showSignInView
+        self._profileIncomplete = profileIncomplete
+        self._profileViewModel = StateObject(wrappedValue: ProfileViewModel(workoutDataService: workoutDataService))
+    }
+    
     var body: some View {
-        if let profile = profileViewModel.myProfile {
+        if let profile = viewModel.profile {
             ProfileHeaderView(
                 followerCount: $followerCount,
                 followingCount: $followingCount,
-                profile: profile
+                profile: profile,
+                workoutDataService: workoutDataService
             )
             .padding()
-        }
-        
-        List {
-            Section("Personal Content") {
-                NavigationLink("My Exercises") {
-                    UserExerciseListView(
-                        viewModel: ExercisesViewModel(dataService: workoutDataService),
-                        userId: userId,
-                        workoutDataService: workoutDataService
-                    )
+            
+            List {
+                Section("Personal Content") {
+                    NavigationLink("My Exercises") {
+                        UserExerciseListView(
+                            viewModel: ExercisesViewModel(dataService: workoutDataService),
+                            username: profile.username,
+                            workoutDataService: workoutDataService
+                        )
+                    }
+                }
+            }
+            .scrollDisabled(true)
+            .task {
+                try? await viewModel.loadCurrentUserAndProfile()
+                do {
+                    try await profileViewModel.loadMyProfile()
+                } catch {
+                    profileIncomplete = true
+                }
+                if let profile = profileViewModel.myProfile {
+                    followerCount = profile.followers.count
+                    followingCount = profile.following.count
                 }
             }
         }
-        .scrollDisabled(true)
-        .task {
-            try? await viewModel.loadCurrentUser()
-            do {
-                try await profileViewModel.loadMyProfile()
-            } catch {
-                profileIncomplete = true
-            }
-            if let profile = profileViewModel.myProfile {
-                followerCount = profile.followers.count
-                followingCount = profile.following.count
-            }
-        }
+        
+        // MARK: Poor Coding Practice
+        Text("")
         .onAppear {
             Task {
-                userId = try AuthenticationManager.shared.getAuthenticatedUser().uid
+                try await viewModel.loadCurrentUserAndProfile()
             }
         }
         .onChange(of: showSignInView, { oldValue, newValue in
             Task {
-                try? await viewModel.loadCurrentUser()
-                userId = try AuthenticationManager.shared.getAuthenticatedUser().uid
+                try await viewModel.loadCurrentUserAndProfile()
             }
         })
         .onChange(of: profileIncomplete) {

@@ -14,21 +14,21 @@ struct ActivityView: View {
     @State private var targetActivityId: String? = nil
     
     @ObservedObject var viewModel: ActivityViewModel
-    @Binding var userId: String
     @Binding var scrollTargetActivity: Int?
+    var username: String
     let workoutDataService: WorkoutManagerProtocol
     let workoutId: String
     
     init(
         viewModel: ActivityViewModel,
-        userId: Binding<String>,
         scrollTargetActivity: Binding<Int?>,
+        username: String,
         workoutDataService: WorkoutManagerProtocol,
         workoutId: String
     ) {
         self.viewModel = viewModel
-        _userId = userId
-        _scrollTargetActivity = scrollTargetActivity
+        self._scrollTargetActivity = scrollTargetActivity
+        self.username = username
         self.workoutId = workoutId
         self.workoutDataService = workoutDataService
     }
@@ -42,7 +42,7 @@ struct ActivityView: View {
                             activityViewModel: viewModel,
                             workoutDataService: workoutDataService,
                             workoutId: workoutId,
-                            userIds: [userId, "global"],
+                            usernames: [username, "global"],
                             scrollTargetActivity: $scrollTargetActivity
                         )
                         .onDisappear {
@@ -53,7 +53,9 @@ struct ActivityView: View {
                     }
                 }
             } else {
-                ForEach($viewModel.activities) { $workoutActivity in
+                ForEach($viewModel.activities, id: \.activity.id) { $workoutActivity in
+                    let currentId = workoutActivity.activity.id
+                    
                     Section {
                         HStack {
                             Text(workoutActivity.exercise.name)
@@ -63,7 +65,6 @@ struct ActivityView: View {
                             Button("", systemImage: "plus") {
                                 if viewModel.activities.count < 10 {
                                     viewModel.addEmptyActivitySet(workoutId: workoutId, activity: workoutActivity.activity)
-//                                    viewModel.getAllActivities(workoutId: workoutId)
                                 }
                             }
                             Button("", systemImage: "trash") {
@@ -73,13 +74,15 @@ struct ActivityView: View {
                         }
                         .buttonStyle(.plain)
                         
-                        ActivitySetsView(
-                            viewModel: viewModel,
-                            workoutId: workoutId,
-                            activity: $workoutActivity.activity
-                        )
+                        if viewModel.activities.contains(where: { $0.activity.id == currentId }) {
+                            ActivitySetsView(
+                                viewModel: viewModel,
+                                workoutId: workoutId,
+                                activity: $workoutActivity.activity
+                            )
+                        }
                     }
-                    .id(workoutActivity.activity.workoutIndex)
+                    .id(workoutActivity.activity.id)
                 }
             }
         }
@@ -97,24 +100,20 @@ struct ActivityView: View {
             Text("Removing exercise will remove all sets recorded for exercise. Are you sure you want to continue?")
         }
     }
-    
-    private func removeActivitySet(activity: DBActivity) {
-        guard let lastSet = activity.activitySets.last else { return }
-        viewModel.removeActivitySet(workoutId: workoutId, activityId: activity.id, set: lastSet)
-    }
 }
 
 #Preview {
     @Previewable let workoutDataService = ProdWorkoutManager(workoutCollection: Firestore.firestore().collection("workouts"))
-    @Previewable @State var userId: String = ""
+    @Previewable let username: String = ""
     @Previewable @State var scrollTargetActivity: Int? = nil
     NavigationStack {
         ActivityView(
             viewModel: ActivityViewModel(dataService: workoutDataService),
-            userId: $userId,
             scrollTargetActivity: $scrollTargetActivity,
+            username: username,
             workoutDataService: workoutDataService,
             workoutId: "064F0044-E158-47F1-AAD3-3EA4DEA0C1BF"
         )
     }
 }
+

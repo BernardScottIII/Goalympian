@@ -11,7 +11,6 @@ import FirebaseFirestore
 struct EditWorkoutView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var activityViewModel: ActivityViewModel
-    @State private var userId: String = ""
     @State private var scrollTargetActivity: Int? = nil
     @State private var keyboardOnScreen: Bool = false
     
@@ -41,8 +40,8 @@ struct EditWorkoutView: View {
                     
                     ActivityView(
                         viewModel: activityViewModel,
-                        userId: $userId,
                         scrollTargetActivity: $scrollTargetActivity,
+                        username: workout.username,
                         workoutDataService: workoutDataService,
                         workoutId: workout.id
                     )
@@ -76,7 +75,7 @@ struct EditWorkoutView: View {
                         activityViewModel: activityViewModel,
                         workoutDataService: workoutDataService,
                         workoutId: workout.id,
-                        userIds: [userId, "global"],
+                        usernames: [workout.username, "global"],
                         scrollTargetActivity: $scrollTargetActivity
                     )
                     .onDisappear {
@@ -100,11 +99,6 @@ struct EditWorkoutView: View {
                 }
             }
         }
-        .onAppear {
-            Task {
-                self.userId = try AuthenticationManager.shared.getAuthenticatedUser().uid
-            }
-        }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
             keyboardOnScreen = true
         }
@@ -115,7 +109,7 @@ struct EditWorkoutView: View {
     
     private func saveWorkout() {
         Task {
-            try await workoutDataService.updateWorkout(workout: DBWorkout(id: workout.id, userId: workout.userId, name: workout.name, description: workout.description, date: workout.date))
+            try await workoutDataService.updateWorkout(workout: DBWorkout(id: workout.id, username: workout.username, name: workout.name, description: workout.description, date: workout.date))
             /// I think this is fine because it's not forcing the main thread to wait, and instead will be called when
             /// the WorkoutManager is finished updating the workout
             dismiss()
@@ -124,7 +118,7 @@ struct EditWorkoutView: View {
 }
 
 #Preview {
-    @Previewable @State var workout = DBWorkout(id: UUID().uuidString, userId: UUID().uuidString, name: "Sample", description: "Example", date: .now)
+    @Previewable @State var workout = DBWorkout(id: UUID().uuidString, username: UUID().uuidString, name: "Sample", description: "Example", date: .now)
     NavigationStack {
         EditWorkoutView(workout: $workout, workoutDataService: ProdWorkoutManager(workoutCollection: Firestore.firestore().collection("workouts")))
     }

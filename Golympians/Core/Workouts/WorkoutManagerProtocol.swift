@@ -16,6 +16,8 @@ protocol WorkoutManagerProtocol {
     
     func removeWorkout(workoutId: String) async throws
     
+    func changeUsername(from oldUsername: String, to newUsername: String) async throws
+    
     // MARK: WorkoutActivity Protocol
     func addWorkoutActivity(workoutId: String, exercise: APIExercise) async throws
     
@@ -31,5 +33,5 @@ protocol WorkoutManagerProtocol {
     
     func addActivitySet(workoutId: String, activityId: String, set: DBActivitySet) async throws
     
-    func removeActivitySet(workoutId: String, activityId: String, set: DBActivitySet) async throws
+    func removeActivitySet(workoutId: String, activity: DBActivity, set: DBActivitySet) async throws
 }

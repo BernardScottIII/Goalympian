@@ -7,6 +7,7 @@
 
 import SwiftUI
 import PhotosUI
+import FirebaseFirestore
 
 struct EditProfileView: View {
     @Environment(\.dismiss) private var dismiss
@@ -136,9 +137,10 @@ struct EditProfileView: View {
 }
 
 #Preview {
-    @Previewable @StateObject var profileVM = ProfileViewModel()
-    @Previewable @StateObject var userAccVM = UserAccountViewModel()
+    @Previewable let workoutDataService = ProdWorkoutManager(workoutCollection: Firestore.firestore().collection("workouts"))
+//    @Previewable @StateObject var profileVM = ProfileViewModel(workoutDataService: workoutDataService)
+//    @Previewable @StateObject var userAccVM = UserAccountViewModel()
     NavigationStack {
-        EditProfileView(profileViewModel: profileVM, userAccountViewModel: userAccVM)
+        EditProfileView(profileViewModel: ProfileViewModel(workoutDataService: workoutDataService), userAccountViewModel: UserAccountViewModel())
     }
 }

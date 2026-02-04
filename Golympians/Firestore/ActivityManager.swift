@@ -74,19 +74,19 @@ enum DBActivitySet: Identifiable, Codable {
     }
 }
 
-protocol BaseSet: Codable {
+protocol BaseSet: Identifiable, Codable {
     var id: String { get }
     var setIndex: Int { get }
 }
 
-struct DBResistanceSet: BaseSet {
+struct DBResistanceSet: Identifiable, BaseSet {
     let id: String
     let setIndex: Int
     let weight: Double
     let repetitions: Int
 }
 
-struct DBRunSet: BaseSet {
+struct DBRunSet: Identifiable, BaseSet {
     let id: String
     let setIndex: Int
     let distance: Double
@@ -94,7 +94,7 @@ struct DBRunSet: BaseSet {
     let duration: Double
 }
 
-struct DBSwimSet: BaseSet {
+struct DBSwimSet: Identifiable, BaseSet {
     let id: String
     let setIndex: Int
     let distance: Double

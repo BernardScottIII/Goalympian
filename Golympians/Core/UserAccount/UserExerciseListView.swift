@@ -19,17 +19,17 @@ struct UserExerciseListView: View {
     
     @StateObject var viewModel: ExercisesViewModel
     var workoutDataService: WorkoutManagerProtocol
-    var userId: String
+    var username: String
     
     init(
         viewModel: ExercisesViewModel,
-        userId: String,
+        username: String,
         workoutDataService: WorkoutManagerProtocol
     ) {
         _viewModel = StateObject(wrappedValue: ExercisesViewModel(dataService: workoutDataService))
         _workoutViewModel = StateObject(wrappedValue: WorkoutViewModel(workoutDataService: workoutDataService))
         _activityViewModel = StateObject(wrappedValue: ActivityViewModel(dataService: workoutDataService))
-        self.userId = userId
+        self.username = username
         self.workoutDataService = workoutDataService
     }
     
@@ -41,7 +41,7 @@ struct UserExerciseListView: View {
                     
                     ProgressView()
                         .task {
-                            try? await viewModel.userIdsSelected(userIds: [userId])
+                            try? await viewModel.selectUsernames(usernames: [username])
                             self.isLoading = false
                         }
                 }
@@ -125,7 +125,7 @@ struct UserExerciseListView: View {
             }
             
             try await viewModel.removeUserExercise(exercise: removalCandidateExercise)
-            try await viewModel.userIdsSelected(userIds: [userId])
+            try await viewModel.selectUsernames(usernames: [username])
         }
     }
 }
@@ -133,6 +133,6 @@ struct UserExerciseListView: View {
 #Preview {
     @Previewable let dataService = ProdWorkoutManager(workoutCollection: Firestore.firestore().collection("workouts"))
     NavigationStack {
-        UserExerciseListView(viewModel: ExercisesViewModel(dataService: dataService), userId: UUID().uuidString, workoutDataService: dataService)
+        UserExerciseListView(viewModel: ExercisesViewModel(dataService: dataService), username: UUID().uuidString, workoutDataService: dataService)
     }
 }

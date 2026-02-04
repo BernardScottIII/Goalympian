@@ -120,7 +120,7 @@ struct EditExerciseView: View {
 }
 
 #Preview {
-    @Previewable @State var exercise = APIExercise(name: "", equipment: "", target: .abductor, secondaryMuscles: [], instructions: [], gifUrl: "", uuid: "", setType: .resistance)
+    @Previewable @State var exercise = APIExercise(name: "", equipment: "", target: .abductor, secondaryMuscles: [], instructions: [], gifUrl: "", username: "", setType: .resistance)
     @Previewable @StateObject var viewModel = ExercisesViewModel(dataService: ProdWorkoutManager(workoutCollection: Firestore.firestore().collection("workouts")))
     NavigationStack {
         EditExerciseView(exercise: $exercise, viewModel: viewModel)

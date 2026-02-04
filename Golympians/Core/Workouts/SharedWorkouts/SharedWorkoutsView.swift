@@ -9,12 +9,12 @@ import SwiftUI
 
 struct SharedWorkoutsView: View {
     private let sharedWorkouts:[DBWorkout] = [
-        .init(id: UUID().uuidString, userId: UUID().uuidString, name: "Example 1", description: "Description 1", date: .now),
-        .init(id: UUID().uuidString, userId: UUID().uuidString, name: "Example 2", description: "Description 2", date: .now),
-        .init(id: UUID().uuidString, userId: UUID().uuidString, name: "Example 3", description: "Description 3", date: .now),
-        .init(id: UUID().uuidString, userId: UUID().uuidString, name: "Example 4", description: "Description 4", date: .now),
-        .init(id: UUID().uuidString, userId: UUID().uuidString, name: "Example 5", description: "Description 5", date: .now),
-        .init(id: UUID().uuidString, userId: UUID().uuidString, name: "Example 6", description: "Description 6", date: .now),
+        .init(id: UUID().uuidString, username: UUID().uuidString, name: "Example 1", description: "Description 1", date: .now),
+        .init(id: UUID().uuidString, username: UUID().uuidString, name: "Example 2", description: "Description 2", date: .now),
+        .init(id: UUID().uuidString, username: UUID().uuidString, name: "Example 3", description: "Description 3", date: .now),
+        .init(id: UUID().uuidString, username: UUID().uuidString, name: "Example 4", description: "Description 4", date: .now),
+        .init(id: UUID().uuidString, username: UUID().uuidString, name: "Example 5", description: "Description 5", date: .now),
+        .init(id: UUID().uuidString, username: UUID().uuidString, name: "Example 6", description: "Description 6", date: .now),
     ]
     
     var body: some View {

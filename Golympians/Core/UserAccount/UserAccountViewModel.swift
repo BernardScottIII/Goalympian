@@ -14,9 +14,12 @@ final class UserAccountViewModel: ObservableObject {
     @Published private(set) var user: DBUser? = nil
     @Published private(set) var profile: Profile? = nil
     
-    func loadCurrentUser() async throws {
+    func loadCurrentUserAndProfile() async throws {
         let authDataResult = try AuthenticationManager.shared.getAuthenticatedUser()
         user = try await UserManager.shared.getUser(userId: authDataResult.uid)
+        if let username = user?.username {
+            profile = try await ProfileManager.shared.getProfile(username: username)
+        }
     }
     
     func toggleDarkMode() {

@@ -94,7 +94,7 @@ If you are seeing this screen, thank you for being an early adopter! We've just 
                         // 2) Continue your existing upload + user reload flow
                         do {
                             try await userAccountViewModel.saveFirstProfileImage(item: newValue)
-                            try await userAccountViewModel.loadCurrentUser()
+                            try await userAccountViewModel.loadCurrentUserAndProfile()
                             if let photoURL = userAccountViewModel.user?.photoURL {
                                 await MainActor.run { url = URL(string: photoURL) }
                             }
@@ -224,14 +224,14 @@ If you are seeing this screen, thank you for being an early adopter! We've just 
         .onAppear {
             Task {
                 try await userAccountViewModel.migrateLegacyUser()
-                try await userAccountViewModel.loadCurrentUser()
+                try await userAccountViewModel.loadCurrentUserAndProfile()
             }
         }
         .onChange(of: selectedPhoto, { oldValue, newValue in
             if let newValue {
                 Task {
                     try await userAccountViewModel.saveFirstProfileImage(item: newValue)
-                    try await userAccountViewModel.loadCurrentUser()
+                    try await userAccountViewModel.loadCurrentUserAndProfile()
                     if let photoURL = userAccountViewModel.user?.photoURL {
                         url = URL(string: photoURL)
                     }
@@ -248,6 +248,7 @@ If you are seeing this screen, thank you for being an early adopter! We've just 
                     nickname: nickname,
                     followers: [],
                     following: [],
+                    publicWorkoutIds: [],
                     photoURL: userAccountViewModel.user?.photoURL,
                     photoPath: userAccountViewModel.user?.photoImagePath
                 )

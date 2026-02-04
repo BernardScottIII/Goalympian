@@ -20,10 +20,50 @@ struct DBWorkoutArray: Codable {
 
 struct DBWorkout: Identifiable, Codable, Hashable {
     let id: String
-    let userId: String
+    let username: String
     var name: String
     var description: String
     var date: Date
+    
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.id, forKey: .id)
+        try container.encode(self.username, forKey: .username)
+        try container.encode(self.name, forKey: .name)
+        try container.encode(self.description, forKey: .description)
+        try container.encode(self.date, forKey: .date)
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case id = "id"
+        case username = "username"
+        case name = "name"
+        case description = "description"
+        case date = "date"
+    }
+    
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(String.self, forKey: .id)
+        self.username = try container.decode(String.self, forKey: .username)
+        self.name = try container.decode(String.self, forKey: .name)
+        self.description = try container.decode(String.self, forKey: .description)
+        self.date = try container.decode(Date.self, forKey: .date)
+    }
+    
+    init(
+        id: String,
+        username: String,
+        name: String,
+        description: String,
+        date: Date
+    ) {
+        self.id = id
+        self.username = username
+        self.name = name
+        self.description = description
+        self.date = date
+    }
 }
 
 final class ProdWorkoutManager: WorkoutManagerProtocol {
@@ -47,11 +87,14 @@ final class ProdWorkoutManager: WorkoutManagerProtocol {
     }
     
     func getAllWorkouts(descending: Bool?) async throws -> [DBWorkout] {
-        var result: Query = try workoutCollection
-            .whereField("userId", isEqualTo: AuthenticationManager.shared.getAuthenticatedUser().uid)
+        let userId = try AuthenticationManager.shared.getAuthenticatedUser().uid
+        let username = try await UserManager.shared.getUser(userId: userId).username
+        
+        var result: Query = workoutCollection
+            .whereField(DBWorkout.CodingKeys.username.rawValue, isEqualTo: username)
         
         if let descending = descending {
-            result = result.order(by: "date", descending: descending)
+            result = result.order(by: DBWorkout.CodingKeys.date.rawValue, descending: descending)
         }
         
         return try await result.getDocuments(as: DBWorkout.self)
@@ -68,6 +111,36 @@ final class ProdWorkoutManager: WorkoutManagerProtocol {
         }
         
         try await workoutDocument(workoutId: workoutId).delete()
+    }
+    
+    func changeUsername(from oldUsername: String, to newUsername: String) async throws {
+        var lastDoc: DocumentSnapshot? = nil
+        while true {
+            var query: Query = workoutCollection
+                .whereField(DBWorkout.CodingKeys.username.rawValue, isEqualTo: oldUsername)
+                .order(by: FieldPath.documentID()).limit(to: 300)
+            if let last = lastDoc {
+                query = query.start(afterDocument: last)
+            }
+            
+            let snapshot = try await query.getDocuments()
+            if snapshot.documents.isEmpty { break }
+            
+            let batch = Firestore.firestore().batch()
+            
+            for doc in snapshot.documents {
+                var data = doc.data()
+                
+                if let oldUsername = data[DBWorkout.CodingKeys.username.rawValue] as? String {
+                    data[DBWorkout.CodingKeys.username.rawValue] = newUsername
+                }
+                
+                batch.setData(data, forDocument: doc.reference, merge: true)
+            }
+            
+            try await batch.commit()
+            lastDoc = snapshot.documents.last
+        }
     }
 }
 
@@ -145,11 +218,18 @@ extension ProdWorkoutManager {
         try await updateWorkoutActivity(workoutId: workoutId, activity: activity)
     }
     
-    func removeActivitySet(workoutId: String, activityId: String, set: DBActivitySet) async throws {
-        let data: [String:Any] = [
-            DBActivity.CodingKeys.activitySets.rawValue : FieldValue.arrayRemove([set])
-        ]
+    func removeActivitySet(workoutId: String, activity: DBActivity, set: DBActivitySet) async throws {
+//        var activity = try await getWorkoutActivity(workoutId: workoutId, activityId: activityId)
+        var newActivity = activity
+        newActivity.activitySets.removeAll { $0.id == set.id }
+        try await updateWorkoutActivity(workoutId: workoutId, activity: newActivity)
+
         
-        try await workoutActivityDocument(workoutId: workoutId, activityId: activityId).updateData(data)
+//        let data: [String:Any] = [
+//            DBActivity.CodingKeys.activitySets.rawValue : FieldValue.arrayRemove([set])
+//        ]
+//        
+//        print("DATA:", data)
+//        try await workoutActivityDocument(workoutId: workoutId, activityId: activityId).updateData(data)
     }
 }
